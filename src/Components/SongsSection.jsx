@@ -1,11 +1,7 @@
-
-
-                     
-                    // ✅ Only changed progress bar logic to use PlayerContext
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { audioAPi, baseUrl } from "../API/API";
-import { Play, Pause, Heart, Plus, Bold } from "lucide-react";
+import { Play, Pause, Heart, Plus, Bold, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePlayer } from "./PlayerContext"; // ⬅️ import global player
 
@@ -25,6 +21,36 @@ const SongsSection = ({ searchResults, selectedSong, setSearchResults }) => {
   const [popupMessage, setPopupMessage] = useState(null);
   const [likedState, setLikedState] = useState({}); // ✅ quick lookup object
   const { currentSong, isPlaying, playSong, togglePlay, currentTime, duration, seek } = usePlayer();
+  // const [popupMessage, setPopupMessage] = useState(null);
+  const [popupType, setPopupType] = useState("info"); // success | error | info
+
+const handleDownload = async (song) => {
+    try {
+      setPopupMessage("Download started 🎧");
+      setPopupType("info");
+      setTimeout(() => setPopupMessage(null), 2000);
+
+      const response = await axios.get(song.audio_url, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${song.name}.mp3`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setPopupMessage("Download complete ✅");
+      setPopupType("success");
+      setTimeout(() => setPopupMessage(null), 2000);
+    } catch (err) {
+      console.error("Error downloading song:", err);
+      setPopupMessage("Download failed ❌");
+      setPopupType("error");
+      setTimeout(() => setPopupMessage(null), 2000);
+    }
+  };
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -71,6 +97,7 @@ const SongsSection = ({ searchResults, selectedSong, setSearchResults }) => {
       [album]: Math.min(prev[album] + 4, groupedSongs[album].length),
     }));
   };
+ 
 
   const toggleLike = async (song) => {
     try {
@@ -121,11 +148,13 @@ const SongsSection = ({ searchResults, selectedSong, setSearchResults }) => {
     }
   }, [selectedSong, playSong]);
 
+
+
   return (
     <>
       <section id="albums" className="px-6 lg:px-16 py-10 bg-gradient-to-b from-white to-gray-50">
         {Object.keys(albumsToRender).map((album, idx) => (
-          <div key={idx} className="mb-14">
+          <div key={idx} id={album.replace(/\s+/g, "-").toLowerCase()} className="mb-14">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900">
                 {album} <span className="text-red-500">Songs</span>
@@ -141,19 +170,32 @@ const SongsSection = ({ searchResults, selectedSong, setSearchResults }) => {
               )}
             </div>
 
-            <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-8">
+            {/* <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-8"> */}
+              {/* <div className="flex overflow-x-auto gap-6 pb-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-8 scrollbar-hide"> */}
+<div className="flex overflow-x-auto gap-6 pb-6 px-6 scrollbar-hide snap-x snap-mandatory scroll-smooth
+                sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
+{/* <div
+  className="flex overflow-x-auto gap-6 pb-6 px-6 snap-x snap-mandatory scroll-smooth custom-scrollbar"
+> */}
               {albumsToRender[album].slice(0, visibleCounts[album]).map((song, index) => {
                 const songId = song.id.toString();
                 return (
-                  <motion.div
-                    key={song.id}
-                    ref={(el) => (songRefs.current[songId] = el)}
-                    className="rounded-2xl p-[2px] bg-gradient-to-br from-red-500/80 via-red-400/70 to-red-600/90 shadow-xl"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                  >
+
+<motion.div
+  key={song.id}
+  ref={(el) => (songRefs.current[songId] = el)}
+  className="w-60 flex-shrink-0 snap-start sm:w-auto rounded-2xl p-[2px] 
+             bg-gradient-to-br from-red-500/80 via-red-400/70 to-red-600/90 
+             shadow-xl hover:z-20"
+  initial={{ opacity: 0, y: 40 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5, delay: index * 0.1 }}
+
+>
+
+
+
                     <div className="bg-white/70 backdrop-blur-md rounded-2xl p-5 flex flex-col items-center shadow-md">
                       <div className="relative w-full h-48 rounded-xl overflow-hidden">
                         {song.img_url ? (
@@ -170,42 +212,54 @@ const SongsSection = ({ searchResults, selectedSong, setSearchResults }) => {
                       </h3>
                       <p className="text-gray-600 text-sm">{song.album}</p>
 
-                      <div className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-7 w-full items-center mt-3">
-                        {/* Add to playlist button */}
-                        <button
-                          onClick={() => toggleAdded(songId, song.id)}
-                          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
-                        >
-                          <Plus
-                            size={20}
-                            fontWeight={Bold}
-                            className={addedSongs[songId] ? "text-red-500 fill-red-800" : ""}
-                          />
-                        </button>
+      
+            
+                     <div className="flex gap-3  w-full items-center mt-3 flex-wrap">
+          {/* Play / Pause */}
+                <button
+                  onClick={() =>
+                    currentSong?.id === song.id ? togglePlay() : playSong(song)
+                  }
+                  className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
+                >
+                  {currentSong?.id === song.id && isPlaying ? (
+                    <Pause size={22} />
+                  ) : (
+                    <Play size={22} />
+                  )}
+                </button>
+                {/* Add to playlist */}
+                <button
+                  onClick={() => toggleAdded(song)}
+                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                >
+                  <Plus
+                    size={20}
+                    className={addedSongs[song.id] ? "text-red-500 fill-red-800" : ""}
+                  />
+                </button>
 
-                        {/* Play/Pause button */}
-                        <button
-                          onClick={() =>
-                            currentSong?.id === song.id ? togglePlay() : playSong(song)
-                          }
-                          className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
-                        >
-                          {currentSong?.id === song.id && isPlaying ? (
-                            <Pause size={22} />
-                          ) : (
-                            <Play size={22} />
-                          )}
-                        </button>
+      
 
-                        {/* Like button */}
-                        <button
-                          onClick={() => toggleLike(song)}
-                          className="p-2 rounded-full bg-white/80 hover:bg-white/100 shadow transition ml-2"
-                        >
-                          <Heart size={18} className={likedState[song.id] ? "text-red-500 fill-red-500" : ""} />
-                        </button>
-                      </div>
- 
+                {/* Like */}
+                <button
+                  onClick={() => toggleLike(song)}
+                  className="p-2 rounded-full bg-white/80 hover:bg-white/100 shadow transition"
+                >
+                  <Heart
+                    size={18}
+                    className={likedState[song.id] ? "text-red-500 fill-red-500" : ""}
+                  />
+                </button>
+
+                {/* Download */}
+                <button
+                  onClick={() => handleDownload(song)}
+                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                >
+                  <Download size={20} />
+                </button>
+              </div>
 {/* ✅ Progress bar (use API duration) */}
 <div className="w-full mt-3">
   <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -229,9 +283,6 @@ const SongsSection = ({ searchResults, selectedSong, setSearchResults }) => {
     className="w-full h-1 bg-gray-300 rounded-lg cursor-pointer accent-red-500"
   />
 </div>
-
-           
-                    
                     </div>
                   </motion.div>
                 );

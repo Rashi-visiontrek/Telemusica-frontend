@@ -14,11 +14,101 @@
 body {
   font-family: "Baloo2", sans-serif;
 }
+/* 
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none;  
+  scrollbar-width: none;  
+}
+
+
+@media (pointer: fine) {
+  .scrollbar-hide::-webkit-scrollbar {
+    height: 8px;
+    display: block;
+  }
+  .scrollbar-hide::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.24);
+    border-radius: 9999px;
+  }
+  .scrollbar-hide {
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+  }
+} */
+
+
+
+/* Hide scrollbar on mobile */
+.custom-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.custom-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Show styled scrollbar only on lg+ screens */
+@media (min-width: 1024px) {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb #f9fafb; /* thumb + track (gray-200 + gray-50) */
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f9fafb; /* track */
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db; /* gray-300 */
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af; /* darker on hover */
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  /* background: #444;   */
+color: black;
+
+  /* Center slide text vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

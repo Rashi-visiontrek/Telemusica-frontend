@@ -14,6 +14,7 @@
     "flowbite": "^2.5.2",
     "flowbite-react": "^0.7.8",
     "framer-motion": "^12.23.12",
+    "keen-slider": "^6.8.6",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.356.0",
     "react": "^19.0.0",
@@ -21,6 +22,8 @@
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.8.0",
+    "react-slick": "^0.31.0",
+    "slick-carousel": "^1.8.1",
     "swiper": "^11.2.10",
     "tailwind-scrollbar-hide": "^4.0.0"
   },

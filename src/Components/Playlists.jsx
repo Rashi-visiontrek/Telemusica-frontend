@@ -285,8 +285,8 @@ const Playlists = () => {
           +
         </div>
         <div className="text-center md:text-left">
-          <p className="uppercase text-sm font-semibold text-gray-700">Your</p>
-          <h1 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2">Playlists</h1>
+          <p className="uppercase text-sm font-semibold text-gray-700">My</p>
+          <h1 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2">Library</h1>
           <p className="text-gray-500">{playlists.length} playlists</p>
         </div>
       </div>

@@ -131,7 +131,8 @@ import {
   Compass,
   Heart,
   ListPlus,
-  LogOut
+  LogOut,
+ Disc3
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
@@ -178,18 +179,19 @@ const Sidebar = ({ isMobile, onClose, onLogout }) => {
                 <Home size={18} /> Home
               </li>
 
-              <li
+            
+  <li
                 className="flex items-center gap-3 hover:text-red-500 cursor-pointer"
-                onClick={() => handleNavigate("albums")}
+                onClick={() => navigate("/newrelease")}
               >
-                <Compass size={18} /> Albums
+                <Disc3 size={18} /> New Release
               </li>
 
               <li
                 className="flex items-center gap-3 hover:text-red-500 cursor-pointer"
-                onClick={() => handleNavigate("Artists")}
+                onClick={() => navigate("/TopHits")}
               >
-                <Compass size={18} /> Artists
+                <Compass size={18} /> Top Hits
               </li>
             </ul>
           </div>
@@ -209,8 +211,9 @@ const Sidebar = ({ isMobile, onClose, onLogout }) => {
                 className="flex items-center gap-3 hover:text-red-500 cursor-pointer"
                 onClick={() => navigate("/playlists")}
               >
-                <ListPlus size={18} /> Add playlist
+                <ListPlus size={18} /> My Library
               </li>
+
             </ul>
           </div>
 
