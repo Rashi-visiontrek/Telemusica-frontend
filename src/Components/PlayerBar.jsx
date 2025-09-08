@@ -1,8 +1,8 @@
 
 
 // src/Components/Playbar.jsx
-import React, { useState } from "react";
-import { Play, Pause, SkipBack, SkipForward, Heart } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Play, Pause, SkipBack, SkipForward, Heart, Download, X } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { baseUrl } from "../API/API";
@@ -18,84 +18,113 @@ const formatTime = (time) => {
 };
 
 const Playbar = () => {
-  const { currentSong, isPlaying, togglePlay, currentTime, duration, seek } = usePlayer();
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    currentTime,
+    duration,
+    seek,
+    playSong,
+    nextSong,
+    prevSong,   // ⬅️ from context
+  } = usePlayer();
+
   const [likedSongs, setLikedSongs] = useState({});
   const [popupMessage, setPopupMessage] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
 
-  if (!currentSong) return null; // Hide if no song selected
+  // Show playbar when a new song comes
+  useEffect(() => {
+    if (currentSong) setIsVisible(true);
+  }, [currentSong]);
 
-  // const toggleLike = async (songId, songDbId) => {
-  //   setLikedSongs((prev) => {
-  //     const isLiked = !prev[songId];
-  //     if (isLiked) {
-  //       setPopupMessage("Song added to Liked Songs ❤️");
-  //       axios.post(`${baseUrl}api/liked-songs/${songDbId}`).catch(console.error);
-  //     } else {
-  //       setPopupMessage("Song removed from Liked Songs 💔");
-  //     }
-  //     setTimeout(() => setPopupMessage(null), 2000);
-  //     return { ...prev, [songId]: isLiked };
-  //   });
-  // };
-const toggleLike = async (songId, songDbId) => {
-  setLikedSongs((prev) => {
-    const isLiked = !prev[songId];
+  // Close handler
+  const handleClose = () => {
+    setIsVisible(false);
+    if (isPlaying) togglePlay();
+    playSong(null);
+  };
 
-    // API call
-    if (isLiked) {
-      axios
-        .post(`${baseUrl}api/liked-songs/${songDbId}`)
-        .catch((err) => console.error("Like API error:", err));
-      setPopupMessage("Song added to Liked Songs ❤️");
-    } else {
-      axios
-        .delete(`${baseUrl}api/liked-songs/${songDbId}`) // call DELETE to unlike
-        .catch((err) => console.error("Unlike API error:", err));
-      setPopupMessage("Song removed from Liked Songs 💔");
+  if (!currentSong || !isVisible) return null;
+
+  // Download
+  const handleDownload = async (song) => {
+    try {
+      setPopupMessage("Download started 🎧");
+      setTimeout(() => setPopupMessage(null), 2000);
+
+      const response = await axios.get(song.audio_url, { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${song.name}.mp3`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setPopupMessage("Download complete ✅");
+      setTimeout(() => setPopupMessage(null), 2000);
+    } catch (err) {
+      console.error("Error downloading song:", err);
+      setPopupMessage("Download failed ❌");
+      setTimeout(() => setPopupMessage(null), 2000);
     }
+  };
 
-    // Hide popup after 2s
-    setTimeout(() => setPopupMessage(null), 2000);
+  // Like/unlike
+  const toggleLike = async (songId, songDbId) => {
+    setLikedSongs((prev) => {
+      const isLiked = !prev[songId];
 
-    return { ...prev, [songId]: isLiked };
-  });
-};
+      if (isLiked) {
+        axios.post(`${baseUrl}api/liked-songs/${songDbId}`)
+          .catch((err) => console.error("Like API error:", err));
+        setPopupMessage("Song added to Liked Songs ❤️");
+      } else {
+        axios.delete(`${baseUrl}api/liked-songs/${songDbId}`)
+          .catch((err) => console.error("Unlike API error:", err));
+        setPopupMessage("Song removed from Liked Songs 💔");
+      }
+
+      setTimeout(() => setPopupMessage(null), 2000);
+      return { ...prev, [songId]: isLiked };
+    });
+  };
 
   return (
     <>
-      {/* <motion.div
-        className="fixed bottom-0 left-0 right-0 bg-red-100 backdrop-blur-md shadow-lg px-6 py-4 flex items-center justify-between z-50"
+      <motion.div
+        className="fixed bottom-0 left-8 right-0 
+                   bg-red-100 backdrop-blur-md 
+                   px-6 py-4 flex items-center justify-center z-40 
+                   border-t-2 border-red-500 
+                   shadow-[0_-4px_20px_rgba(239,68,68,0.4)] rounded-t-2xl"
         initial={{ y: 80 }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
-      > */}
-      <motion.div
-  className="fixed bottom-0 left-0 right-0 
-             bg-red-100 backdrop-blur-md 
-             px-6 py-4 flex items-center justify-between z-50 
-             border-t-2 border-red-500 
-             shadow-[0_-4px_20px_rgba(239,68,68,0.4)] rounded-t-2xl"
-  initial={{ y: 80 }}
-  animate={{ y: 0 }}
-  transition={{ type: 'spring', stiffness: 100 }}
->
-
+        transition={{ type: 'spring', stiffness: 100 }}
+      >
         {/* Song Info */}
-        <div className="flex items-center gap-4">
-          <img
-            src={currentSong.img_url || "/placeholder.png"}
-            alt={currentSong.name}
-            className="w-14 h-14 rounded-lg object-cover shadow-md"
-          />
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900">{currentSong.name}</h4>
-            <p className="text-sm text-gray-600">{currentSong.album}</p>
-          </div>
-        </div>
+      {/* Song Info */}
+<div className="flex items-center gap-4">
+  <img
+    src={currentSong.img_url || "/placeholder.png"}
+    alt={currentSong.name}
+    className="w-14 h-14 rounded-lg object-cover shadow-md"
+  />
+  <div className="hidden md:block">
+    <h4 className="text-lg font-semibold text-gray-900">{currentSong.name}</h4>
+    <p className="text-sm text-gray-600">{currentSong.album}</p>
+  </div>
+</div>
+
 
         {/* Controls */}
         <div className="flex items-center gap-6">
-          <button className="p-2 rounded-full hover:bg-gray-200 transition">
+          <button
+            onClick={prevSong}
+            className="p-2 rounded-full hover:bg-gray-200 transition"
+          >
             <SkipBack size={22} />
           </button>
 
@@ -106,7 +135,10 @@ const toggleLike = async (songId, songDbId) => {
             {isPlaying ? <Pause size={26} /> : <Play size={26} />}
           </button>
 
-          <button className="p-2 rounded-full hover:bg-gray-200 transition">
+          <button
+            onClick={nextSong}
+            className="p-2 rounded-full hover:bg-gray-200 transition"
+          >
             <SkipForward size={22} />
           </button>
         </div>
@@ -125,15 +157,32 @@ const toggleLike = async (songId, songDbId) => {
           <span className="text-xs text-gray-600">{formatTime(duration)}</span>
         </div>
 
-        {/* Like Button */}
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleDownload(currentSong)}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+          >
+            <Download size={20} />
+          </button>
+
+          <button
+            onClick={() => toggleLike(currentSong.id.toString(), currentSong.id)}
+            className="p-2 rounded-full hover:bg-gray-200 transition"
+          >
+            <Heart
+              size={22}
+              className={likedSongs[currentSong.id] ? "text-red-500 fill-red-500" : ""}
+            />
+          </button>
+        </div>
+
+        {/* Close Button */}
         <button
-          onClick={() => toggleLike(currentSong.id.toString(), currentSong.id)}
-          className="p-2 rounded-full hover:bg-gray-200 transition"
+          onClick={handleClose}
+          className="absolute right-2 top-2 rounded-full hover:bg-red-200 transition"
         >
-          <Heart
-            size={22}
-            className={likedSongs[currentSong.id] ? "text-red-500 fill-red-500" : ""}
-          />
+          <X size={22} className="text-red-500" />
         </button>
       </motion.div>
 

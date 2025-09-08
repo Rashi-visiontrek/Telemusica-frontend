@@ -17,29 +17,6 @@ const LikedSongs = () => {
   // ✅ Pull everything from PlayerContext
   const { currentSong, isPlaying, playSong, togglePlay } = usePlayer();
 
-  // useEffect(() => {
-  //   const fetchLikedSongs = async () => {
-  //     try {
-  //       const response = await axios.get(`${baseUrl}api/liked-songs`);
-  //       const songs = response.data.data || [];
-  //       setLikedSongs(songs);
-
-  //       // Set liked state
-  //       const likedObj = {};
-  //       songs.forEach((song) => {
-  //         likedObj[song.id] = true;
-  //       });
-  //       setLikedState(likedObj);
-
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching liked songs:", error);
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchLikedSongs();
-  // }, []);
-
   useEffect(() => {
   const fetchLikedSongs = async () => {
     const minLoadingTime = 3000; // 3 seconds
@@ -103,8 +80,8 @@ const LikedSongs = () => {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-6 bg-gray-50 min-h-screen">
-      {/* Hero Section */}
+    <div className="flex-1 p-4 md:p-6 bg-gray-50 min-h-screen pb-28">   
+   {/* Hero Section */}
       <div className="flex flex-col sm:flex-row sm:items-end gap-4 md:gap-6 p-4 md:p-6 bg-gradient-to-br from-white via-red-50 to-white rounded-lg shadow-md">
         <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 md:w-44 md:h-44 bg-red-300 flex items-center justify-center text-3xl sm:text-4xl md:text-5xl font-bold rounded-full shadow-lg">
           ❤️
@@ -117,10 +94,10 @@ const LikedSongs = () => {
       </div>
 
       {/* Songs List */}
-      <div className="mt-6">
+      <div className="mt-6 pb-28 lg:pb-28">
         {/* Table for medium+ screens */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full bg-white/30 backdrop-blur-md shadow-lg rounded-xl border border-gray-200">
+          <table className="min-w-full bg-white/30 backdrop-blur-md shadow-lg rounded-xl border border-gray-200 ">
             <thead className="bg-red-200/60 text-black text-sm rounded-t-xl">
               <tr>
                 <th className="py-2 px-3 md:px-4 text-left">#</th>
@@ -132,6 +109,7 @@ const LikedSongs = () => {
             <tbody>
               {likedSongs.map((song, index) => (
                 <motion.tr
+onClick={() => currentSong?.id === song.id ? togglePlay() : playSong(song)}
                   key={song.id}
                   className="cursor-pointer hover:bg-white/50 transition-colors"
                   whileHover={{ scale: 1.01 }}

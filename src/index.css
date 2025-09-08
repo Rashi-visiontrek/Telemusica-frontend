@@ -1,8 +1,16 @@
 
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+@import "swiper/css/effect-fade";
+
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
 
 @font-face {
   font-family: "Baloo2";
@@ -10,6 +18,8 @@
   font-weight: 100 900; /* since it's variable weight */
   font-style: normal;
 }
+
+
 
 body {
   font-family: "Baloo2", sans-serif;
@@ -112,3 +122,5 @@ color: black;
   height: 100%;
   object-fit: cover;
 }
+
+

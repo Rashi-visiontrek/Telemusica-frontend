@@ -163,7 +163,7 @@ const TopHits = () => {
 
               <div className="flex gap-3  w-full items-center mt-3 flex-wrap">
           {/* Play / Pause */}
-                <button
+                {/* <button
                   onClick={() =>
                     currentSong?.id === song.id ? togglePlay() : playSong(song)
                   }
@@ -174,7 +174,22 @@ const TopHits = () => {
                   ) : (
                     <Play size={22} />
                   )}
-                </button>
+                </button> */}
+<button
+  onClick={() =>
+    currentSong?.id === song.id
+      ? togglePlay()
+      : playSong(song, topSongs) // 🔥 pass TopHits playlist here
+  }
+  className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
+>
+  {currentSong?.id === song.id && isPlaying ? (
+    <Pause size={22} />
+  ) : (
+    <Play size={22} />
+  )}
+</button>
+
                 {/* Add to playlist */}
                 <button
                   onClick={() => toggleAdded(song)}

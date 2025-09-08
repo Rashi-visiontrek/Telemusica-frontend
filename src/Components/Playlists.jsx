@@ -1,66 +1,55 @@
 
 
 
-// import React, { useEffect, useState, useRef } from "react";
+
+// import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import { baseUrl } from "../API/API";
 // import { Play, Pause } from "lucide-react";
-// import { motion, AnimatePresence } from "framer-motion";
+// import { motion } from "framer-motion";
+// import { usePlayer } from "./PlayerContext"; // ✅ use global player
+// import Lottie from "lottie-react";
+// import Loading from "../Animations/Loading.json";
 
 // const Playlists = () => {
 //   const [playlists, setPlaylists] = useState([]);
 //   const [loading, setLoading] = useState(true);
-//   const [currentPlaylist, setCurrentPlaylist] = useState(null);
-//   const [isPlaying, setIsPlaying] = useState(false);
-//   const audioRef = useRef(null);
+
+//   // ✅ pull from PlayerContext
+//   const { currentSong, isPlaying, playSong, togglePlay } = usePlayer();
 
 //   useEffect(() => {
-//     const fetchPlaylists = async () => {
-//       try {
-//         const response = await axios.get(`${baseUrl}api/playlist`);
-//         const data = response.data.data || [];
-//         setPlaylists(data);
-//         setLoading(false);
-//       } catch (error) {
-//         console.error("Error fetching playlists:", error);
+//   const fetchPlaylists = async () => {
+//     const minLoadingTime = 3000; // 3 seconds
+//     const startTime = Date.now();
+
+//     try {
+//       const response = await axios.get(`${baseUrl}api/playlist`);
+//       const data = response.data.data || [];
+//       setPlaylists(data);
+
+//       // Ensure at least 3 seconds loading
+//       const elapsed = Date.now() - startTime;
+//       const remaining = minLoadingTime - elapsed;
+//       if (remaining > 0) {
+//         setTimeout(() => setLoading(false), remaining);
+//       } else {
 //         setLoading(false);
 //       }
-//     };
-//     fetchPlaylists();
-//   }, []);
+//     } catch (error) {
+//       console.error("Error fetching playlists:", error);
+//       setLoading(false);
+//     }
+//   };
 
-//   // const playPlaylist = (playlist) => {
-//   //   setCurrentPlaylist(playlist);
-//   //   if (audioRef.current) {
-//   //     audioRef.current.load();
-//   //     audioRef.current.play();
-//   //     setIsPlaying(true);
-//   //   }
-//   // };
-// // 👇 inside Playlists component
-// useEffect(() => {
-//   if (currentPlaylist && audioRef.current) {
-//     audioRef.current.load();
-//     audioRef.current.play();
-//     setIsPlaying(true);
-//   }
-// }, [currentPlaylist]);
-
-// const playPlaylist = (playlist) => {
-//   if (currentPlaylist?.id === playlist.id && isPlaying) {
-//     // 🔥 If already playing, pause
-//     audioRef.current.pause();
-//     setIsPlaying(false);
-//   } else {
-//     setCurrentPlaylist(playlist); // 👈 will trigger useEffect to play
-//   }
-// };
+//   fetchPlaylists();
+// }, []);
 
 
 //   if (loading) {
 //     return (
 //       <div className="flex justify-center items-center h-screen">
-//         <p>Loading playlists...</p>
+//            <Lottie animationData={Loading} loop={true} className="w-48 h-48" />
 //       </div>
 //     );
 //   }
@@ -73,14 +62,14 @@
 //           +
 //         </div>
 //         <div className="text-center md:text-left">
-//           <p className="uppercase text-sm font-semibold text-gray-700">Your</p>
-//           <h1 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2">Playlists</h1>
+//           <p className="uppercase text-sm font-semibold text-gray-700">My</p>
+//           <h1 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2">Library</h1>
 //           <p className="text-gray-500">{playlists.length} playlists</p>
 //         </div>
 //       </div>
 
 //       {/* Desktop: Table */}
-//       <div className="hidden md:block overflow-x-auto mt-6">
+//       <div className="hidden md:block overflow-x-auto mt-6  pb-28 lg:pb-28">
 //         <table className="min-w-full bg-white/30 backdrop-blur-md shadow-lg rounded-xl border border-gray-200">
 //           <thead className="bg-red-200/60 text-black text-sm">
 //             <tr>
@@ -100,6 +89,9 @@
 //             ) : (
 //               playlists.map((playlist, index) => (
 //                 <motion.tr
+//   onClick={() =>
+//                         currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
+//                       }
 //                   key={playlist.id}
 //                   className="cursor-pointer hover:bg-white/50 transition-colors"
 //                   whileHover={{ scale: 1.01 }}
@@ -119,10 +111,12 @@
 //                   <td className="py-2 px-3 md:px-4">{playlist.name}</td>
 //                   <td className="py-2 px-3 md:px-4">
 //                     <button
-//                       onClick={() => playPlaylist(playlist)}
+//                       onClick={() =>
+//                         currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
+//                       }
 //                       className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
 //                     >
-//                       {currentPlaylist?.id === playlist.id && isPlaying ? (
+//                       {currentSong?.id === playlist.id && isPlaying ? (
 //                         <Pause size={20} />
 //                       ) : (
 //                         <Play size={20} />
@@ -141,7 +135,7 @@
 //         {playlists.length === 0 ? (
 //           <p className="text-gray-500 text-center">No playlists yet.</p>
 //         ) : (
-//           playlists.map((playlist, index) => (
+//           playlists.map((playlist) => (
 //             <motion.div
 //               key={playlist.id}
 //               className="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-4 flex items-center justify-between"
@@ -160,10 +154,12 @@
 //                 </div>
 //               </div>
 //               <button
-//                 onClick={() => playPlaylist(playlist)}
+//                 onClick={() =>
+//                   currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
+//                 }
 //                 className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
 //               >
-//                 {currentPlaylist?.id === playlist.id && isPlaying ? (
+//                 {currentSong?.id === playlist.id && isPlaying ? (
 //                   <Pause size={20} />
 //                 ) : (
 //                   <Play size={20} />
@@ -173,48 +169,6 @@
 //           ))
 //         )}
 //       </div>
-
-//       {/* Now Playing Bar */}
-//       <AnimatePresence>
-//         {currentPlaylist && (
-//           <motion.div
-//             initial={{ y: 100, opacity: 0 }}
-//             animate={{ y: 0, opacity: 1 }}
-//             exit={{ y: 100, opacity: 0 }}
-//             transition={{ duration: 0.4 }}
-//             className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-xl border-t border-gray-200 p-4 flex items-center justify-between z-50"
-//           >
-//             <div className="flex items-center gap-4">
-//               <img
-//                 src={currentPlaylist.img_url}
-//                 alt={currentPlaylist.name}
-//                 className="w-14 h-14 rounded-lg object-cover"
-//               />
-//               <div>
-//                 <h4 className="font-semibold text-gray-900 truncate max-w-[200px]">
-//                   {currentPlaylist.name}
-//                 </h4>
-//                 <p className="text-sm text-gray-600 truncate max-w-[200px]">
-//                   {currentPlaylist.album} Songs
-//                 </p>
-//               </div>
-//             </div>
-//             <div className="flex-1 px-6">
-//               <audio
-//                 ref={audioRef}
-//                 controls
-//                 className="w-full"
-//                 onPlay={() => setIsPlaying(true)}
-//                 onPause={() => setIsPlaying(false)}
-//                 onEnded={() => setIsPlaying(false)}
-//               >
-//                 <source src={currentPlaylist.audio_url} type="audio/mpeg" />
-//                 Your browser does not support the audio element.
-//               </audio>
-//             </div>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
 //     </div>
 //   );
 // };
@@ -222,63 +176,66 @@
 // export default Playlists;
 
 
-
-
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseUrl } from "../API/API";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { usePlayer } from "./PlayerContext"; // ✅ use global player
+import { usePlayer } from "./PlayerContext";
 import Lottie from "lottie-react";
 import Loading from "../Animations/Loading.json";
+import { Toaster, toast } from "react-hot-toast"; // ✅ toast notifications
 
 const Playlists = () => {
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ pull from PlayerContext
   const { currentSong, isPlaying, playSong, togglePlay } = usePlayer();
 
   useEffect(() => {
-  const fetchPlaylists = async () => {
-    const minLoadingTime = 3000; // 3 seconds
-    const startTime = Date.now();
+    const fetchPlaylists = async () => {
+      const minLoadingTime = 3000;
+      const startTime = Date.now();
 
-    try {
-      const response = await axios.get(`${baseUrl}api/playlist`);
-      const data = response.data.data || [];
-      setPlaylists(data);
+      try {
+        const response = await axios.get(`${baseUrl}api/playlist`);
+        const data = response.data.data || [];
+        setPlaylists(data);
 
-      // Ensure at least 3 seconds loading
-      const elapsed = Date.now() - startTime;
-      const remaining = minLoadingTime - elapsed;
-      if (remaining > 0) {
-        setTimeout(() => setLoading(false), remaining);
-      } else {
+        const elapsed = Date.now() - startTime;
+        const remaining = minLoadingTime - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching playlists:", error);
         setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching playlists:", error);
-      setLoading(false);
-    }
+    };
+
+    fetchPlaylists();
+  }, []);
+
+  // ✅ Remove playlist locally by filtering state
+  const removePlaylist = (playlistId) => {
+    setPlaylists((prev) => prev.filter((playlist) => playlist.id !== playlistId));
+    toast.success("successfully removed from your library");
   };
-
-  fetchPlaylists();
-}, []);
-
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-           <Lottie animationData={Loading} loop={true} className="w-48 h-48" />
+        <Lottie animationData={Loading} loop={true} className="w-48 h-48" />
       </div>
     );
   }
 
   return (
     <div className="flex-1 p-4 md:p-6 bg-gray-50 min-h-screen">
+      <Toaster position="top-center" reverseOrder={false} />
+
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 p-4 md:p-6 bg-gradient-to-br from-white via-red-50 to-white rounded-lg shadow-md">
         <div className="w-24 h-24 md:w-48 md:h-48 bg-red-300 flex items-center justify-center text-4xl md:text-7xl font-bold rounded-full shadow-lg">
@@ -292,14 +249,14 @@ const Playlists = () => {
       </div>
 
       {/* Desktop: Table */}
-      <div className="hidden md:block overflow-x-auto mt-6">
+      <div className="hidden md:block overflow-x-auto mt-6 pb-28 lg:pb-28">
         <table className="min-w-full bg-white/30 backdrop-blur-md shadow-lg rounded-xl border border-gray-200">
           <thead className="bg-red-200/60 text-black text-sm">
             <tr>
               <th className="py-2 px-3 md:px-4 text-left">#</th>
               <th className="py-2 px-3 md:px-4 text-left">Playlist</th>
               <th className="py-2 px-3 md:px-4 text-left">Songs</th>
-              <th className="py-2 px-3 md:px-4 text-left"></th>
+              <th className="py-2 px-3 md:px-4 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -312,6 +269,9 @@ const Playlists = () => {
             ) : (
               playlists.map((playlist, index) => (
                 <motion.tr
+                  onClick={() =>
+                    currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
+                  }
                   key={playlist.id}
                   className="cursor-pointer hover:bg-white/50 transition-colors"
                   whileHover={{ scale: 1.01 }}
@@ -329,11 +289,12 @@ const Playlists = () => {
                     </div>
                   </td>
                   <td className="py-2 px-3 md:px-4">{playlist.name}</td>
-                  <td className="py-2 px-3 md:px-4">
+                  <td className="py-2 px-3 md:px-4 flex gap-2">
                     <button
-                      onClick={() =>
-                        currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
-                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        currentSong?.id === playlist.id ? togglePlay() : playSong(playlist);
+                      }}
                       className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
                     >
                       {currentSong?.id === playlist.id && isPlaying ? (
@@ -341,6 +302,15 @@ const Playlists = () => {
                       ) : (
                         <Play size={20} />
                       )}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removePlaylist(playlist.id);
+                      }}
+                      className="p-2 rounded-full bg-gray-300 text-gray-700 hover:bg-gray-400 shadow-md transition"
+                    >
+                      <Trash2 size={20} />
                     </button>
                   </td>
                 </motion.tr>
@@ -373,18 +343,26 @@ const Playlists = () => {
                   <p className="text-xs text-gray-400 truncate">{playlist.name}</p>
                 </div>
               </div>
-              <button
-                onClick={() =>
-                  currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
-                }
-                className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
-              >
-                {currentSong?.id === playlist.id && isPlaying ? (
-                  <Pause size={20} />
-                ) : (
-                  <Play size={20} />
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    currentSong?.id === playlist.id ? togglePlay() : playSong(playlist)
+                  }
+                  className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
+                >
+                  {currentSong?.id === playlist.id && isPlaying ? (
+                    <Pause size={20} />
+                  ) : (
+                    <Play size={20} />
+                  )}
+                </button>
+                <button
+                  onClick={() => removePlaylist(playlist.id)}
+                  className="p-2 rounded-full bg-gray-300 text-gray-700 hover:bg-gray-400 shadow-md transition"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
             </motion.div>
           ))
         )}

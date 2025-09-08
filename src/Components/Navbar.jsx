@@ -1,6 +1,7 @@
 
 
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; 
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { baseUrl } from "../API/API";
@@ -19,7 +20,7 @@ const Navbar = ({ onNavigate, onSearchResults }) => {
 
   // const { playSong } = useAudioPlayer(); // ✅ get playSong from context
   const { playSong } = usePlayer(); // ✅
-
+  const navigate = useNavigate();
 
   // Hide dropdown if clicked outside
   useEffect(() => {
@@ -65,7 +66,7 @@ const Navbar = ({ onNavigate, onSearchResults }) => {
 
   return (
     <>
-      <nav className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white shadow-md">
+   <nav className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white shadow-md">
         {/* Left: Mobile logo + menu button */}
         <div className="flex items-center space-x-3">
           <button
@@ -76,11 +77,14 @@ const Navbar = ({ onNavigate, onSearchResults }) => {
           </button>
 
           {/* ✅ Logo for mobile */}
-          <img
-            src={logowhite}
-            alt="Logo"
-            className="h-8 w-auto lg:hidden"
-          />
+       {/* ✅ Logo with navigation */}
+          <button onClick={() => navigate("/home")} className="focus:outline-none">
+            <img
+              src={logowhite}
+              alt="Logo"
+              className="h-8 w-auto lg:hidden"
+            />
+          </button>
 
           {/* Search (desktop only) */}
           <input
@@ -93,7 +97,7 @@ const Navbar = ({ onNavigate, onSearchResults }) => {
         </div>
 
         {/* ✅ Searchbar on mobile (right side) */}
-        <div className="flex-1 flex justify-end lg:hidden">
+        <div className="flex-1 flex justify-end md:hidden lg:hidden">
           <input
             type="text"
             placeholder="Search..."

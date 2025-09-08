@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { audioAPi, baseUrl } from "../API/API";
 import { Play, Pause, Heart, Plus, Bold, Download } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion ,  AnimatePresence } from "framer-motion";
 import { usePlayer } from "./PlayerContext"; // ⬅️ import global player
 
 const formatTime = (time) => {
@@ -91,6 +91,14 @@ const handleDownload = async (song) => {
     fetchSongs();
   }, []);
 
+useEffect(() => {
+  if (popupMessage) {
+    const timer = setTimeout(() => setPopupMessage(null), 2000);
+    return () => clearTimeout(timer);
+  }
+}, [popupMessage]);
+
+
   const handleViewMore = (album) => {
     setVisibleCounts((prev) => ({
       ...prev,
@@ -99,17 +107,41 @@ const handleDownload = async (song) => {
   };
  
 
+//   const toggleLike = async (song) => {
+//     try {
+//       const isLiked = likedState[song.id];
+
+//       if (isLiked) {
+//         setPopupMessage("Song added to your favorites🎶");
+//         // Unlike → call DELETE API
+//         await axios.delete(`${baseUrl}api/liked-songs/${song.id}`);
+//         setLikedState((prev) => ({ ...prev, [song.id]: false }));
+//         setLikedSongs((prev) => prev.filter((s) => s.id !== song.id));
+//       } else {
+// setPopupMessage("Song removed from your favorites ❌");
+//         // Like → call POST API
+//         await axios.post(`${baseUrl}api/liked-songs/${song.id}`);
+//         setLikedState((prev) => ({ ...prev, [song.id]: true }));
+//         setLikedSongs((prev) => [...prev, song]);
+//       }
+//     } catch (error) {
+//       console.error("Error toggling like:", error);
+//     }
+//   };
+
+
+
   const toggleLike = async (song) => {
     try {
       const isLiked = likedState[song.id];
 
       if (isLiked) {
-        // Unlike → call DELETE API
+        setPopupMessage("🔥 Song removed from your favorites ❌");
         await axios.delete(`${baseUrl}api/liked-songs/${song.id}`);
         setLikedState((prev) => ({ ...prev, [song.id]: false }));
         setLikedSongs((prev) => prev.filter((s) => s.id !== song.id));
       } else {
-        // Like → call POST API
+        setPopupMessage("🔥 Song added to your favorites 🎶");
         await axios.post(`${baseUrl}api/liked-songs/${song.id}`);
         setLikedState((prev) => ({ ...prev, [song.id]: true }));
         setLikedSongs((prev) => [...prev, song]);
@@ -118,23 +150,37 @@ const handleDownload = async (song) => {
       console.error("Error toggling like:", error);
     }
   };
-
-  const toggleAdded = async (songId, songDbId) => {
-    setAddedSongs((prev) => {
-      const isAdded = !prev[songId];
-      if (isAdded) {
-        setPopupMessage("Song added to your playlist 🎶");
-        axios.post(`${baseUrl}api/playlist/${songDbId}`).catch(console.error);
-      } else {
-        setPopupMessage("Song removed from your playlist ❌");
-      }
-      setTimeout(() => setPopupMessage(null), 2000);
-      return { ...prev, [songId]: isAdded };
-    });
-  };
+  // const toggleAdded = async (songId, songDbId) => {
+  //   setAddedSongs((prev) => {
+  //     const isAdded = !prev[songId];
+  //     if (isAdded) {
+  //       setPopupMessage("Song added to your playlist 🎶");
+  //       axios.post(`${baseUrl}api/playlist/${songDbId}`).catch(console.error);
+  //     } else {
+  //       setPopupMessage("Song removed from your playlist ❌");
+  //     }
+  //     setTimeout(() => setPopupMessage(null), 2000);
+  //     return { ...prev, [songId]: isAdded };
+  //   });
+  // };
 
   // Search vs albums
-  const isSearching = searchResults?.length > 0;
+  
+  const toggleAdded = async (song) => {
+    setAddedSongs((prev) => {
+      const isAdded = !prev[song.id];
+      if (isAdded) {
+        setPopupMessage("🔥 Song added to your playlist 🎶");
+        axios.post(`${baseUrl}api/playlist/${song.id}`).catch(console.error);
+      } else {
+        setPopupMessage("🔥 Song removed from your playlist ❌");
+        axios.delete(`${baseUrl}api/playlist/${song.id}`).catch(console.error);
+      }
+      setTimeout(() => setPopupMessage(null), 2000);
+      return { ...prev, [song.id]: isAdded };
+    });
+  };
+const isSearching = searchResults?.length > 0;
   const albumsToRender = isSearching ? { "Search Results": searchResults } : groupedSongs;
 
   // ✅ Autoplay if song selected from search dropdown
@@ -170,15 +216,10 @@ const handleDownload = async (song) => {
               )}
             </div>
 
-            {/* <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-8"> */}
-              {/* <div className="flex overflow-x-auto gap-6 pb-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-8 scrollbar-hide"> */}
 <div className="flex overflow-x-auto gap-6 pb-6 px-6 scrollbar-hide snap-x snap-mandatory scroll-smooth
                 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 
-{/* <div
-  className="flex overflow-x-auto gap-6 pb-6 px-6 snap-x snap-mandatory scroll-smooth custom-scrollbar"
-> */}
-              {albumsToRender[album].slice(0, visibleCounts[album]).map((song, index) => {
+        {albumsToRender[album].slice(0, visibleCounts[album]).map((song, index) => {
                 const songId = song.id.toString();
                 return (
 
@@ -187,15 +228,12 @@ const handleDownload = async (song) => {
   ref={(el) => (songRefs.current[songId] = el)}
   className="w-60 flex-shrink-0 snap-start sm:w-auto rounded-2xl p-[2px] 
              bg-gradient-to-br from-red-500/80 via-red-400/70 to-red-600/90 
-             shadow-xl hover:z-20"
+             shadow-xl"
   initial={{ opacity: 0, y: 40 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ duration: 0.5, delay: index * 0.1 }}
 
 >
-
-
-
                     <div className="bg-white/70 backdrop-blur-md rounded-2xl p-5 flex flex-col items-center shadow-md">
                       <div className="relative w-full h-48 rounded-xl overflow-hidden">
                         {song.img_url ? (
@@ -214,11 +252,11 @@ const handleDownload = async (song) => {
 
       
             
-                     <div className="flex gap-3  w-full items-center mt-3 flex-wrap">
+                     <div className="flex gap-2 justify-center  w-full items-center mt-3">
           {/* Play / Pause */}
                 <button
                   onClick={() =>
-                    currentSong?.id === song.id ? togglePlay() : playSong(song)
+                    currentSong?.id === song.id ? togglePlay() : playSong(song,albumsToRender[album])
                   }
                   className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md transition"
                 >
@@ -261,14 +299,14 @@ const handleDownload = async (song) => {
                 </button>
               </div>
 {/* ✅ Progress bar (use API duration) */}
-<div className="w-full mt-3">
+{/* <div className="w-full mt-3">
   <div className="flex justify-between text-xs text-gray-600 mb-1">
     <span>
       {currentSong?.id === song.id ? formatTime(currentTime) : "0:00"}
     </span>
     <span>
       {song.Duration /* API duration string */}
-    </span>
+    {/* </span>
   </div>
   <input
     type="range"
@@ -282,7 +320,43 @@ const handleDownload = async (song) => {
     onChange={(e) => currentSong?.id === song.id && seek(Number(e.target.value))}
     className="w-full h-1 bg-gray-300 rounded-lg cursor-pointer accent-red-500"
   />
-</div>
+</div> */} 
+
+      <div className="w-full mt-3">
+                          <div className="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>
+                              {currentSong?.id === song.id
+                                ? formatTime(currentTime)
+                                : "0:00"}
+                            </span>
+                            <span>
+                              {currentSong?.id === song.id
+                                ? formatTime(duration)
+                                : song.Duration}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={
+                              currentSong?.id === song.id
+                                ? Math.floor(duration)
+                                : song.Duration
+                                ? song.Duration.split(":")[0] * 60 +
+                                  parseInt(song.Duration.split(":")[1])
+                                : 0
+                            }
+                            value={
+                              currentSong?.id === song.id ? currentTime : 0
+                            }
+                            onChange={(e) =>
+                              currentSong?.id === song.id &&
+                              seek(Number(e.target.value))
+                            }
+                            className="w-full h-1 bg-gray-300 rounded-lg cursor-pointer accent-red-500"
+                          />
+                        </div>
+
                     </div>
                   </motion.div>
                 );
@@ -304,16 +378,43 @@ const handleDownload = async (song) => {
       </section>
 
       {/* 🔔 Like/Playlist popup */}
-      {popupMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 30 }}
-          className="fixed bottom-6 right-6 bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg z-50"
-        >
-          {popupMessage}
-        </motion.div>
-      )}
+ {/* <AnimatePresence>
+  {popupMessage && (
+    <motion.div
+      key="popup"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 30 }}
+      transition={{ duration: 0.3 }}
+      className="fixed bottom-10 right-6 bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg z-50"
+    >
+      {popupMessage}
+    </motion.div>
+  )}
+</AnimatePresence> */}
+      {/* 🔔 Popup */}
+      <AnimatePresence>
+        {popupMessage && (
+          <motion.div
+            key="popup"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ duration: 0.3 }}
+            className={`fixed bottom-10 right-6 px-4 py-3 rounded-xl shadow-lg z-50 
+              ${
+                popupType === "success"
+                  ? "🔥 bg-green-500" // ✅ success = green
+                  : popupType === "error"
+                  ? "🔥 bg-red-500"   // ❌ error = red
+                  : "🔥 bg-gray-800"  // ℹ️ info = gray
+              } text-white`}
+          >
+            {popupMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </>
   );
 };

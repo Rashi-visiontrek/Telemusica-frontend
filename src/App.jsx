@@ -39,7 +39,9 @@ function App() {
 
   return (
     <PlayerProvider>
-      <div className="min-h-screen bg-gradient-to-br from-white via-red-50 to-white text-gray-900 overflow-x-hidden">
+      {/* <div className="min-h-screen bg-gradient-to-br from-white via-red-50 to-white text-gray-900 overflow-x-hidden"> */}
+<div className="min-h-screen bg-gradient-to-br from-white via-red-50 to-white text-gray-900 overflow-y-auto">
+
         <div className="min-h-screen flex flex-col lg:flex-row">
           {/* Sidebar */}
           <div className="lg:block hidden">
@@ -48,9 +50,7 @@ function App() {
 
           {/* Main Content */}
           {/* <div className="flex-1 p-1 lg:ml-64 w-[70%]"> */}
-<div className="flex-1 px-4 py-2 lg:ml-64 w-full lg:w-[70%]">
-
-{/* <div className=""> */}
+{/* <div className="flex-1 px-4 py-2 lg:ml-64 w-full lg:w-[70%]">
             <Navbar
               onSearchResults={setSearchResults}
               onPlaySong={(song) => setAutoPlaySong(song)}
@@ -74,7 +74,33 @@ function App() {
               <Route path="/TopHits" element={<TopHits />} />
               <Route path="/newrelease" element={<NewRelease />} />
             </Routes>
-          </div>
+          </div> */}
+<div className="flex-1 px-4 py-2 lg:ml-64">
+  <Navbar
+    onSearchResults={setSearchResults}
+    onPlaySong={(song) => setAutoPlaySong(song)}
+  />
+
+  <Routes>
+    <Route path="/" element={<Navigate to="/home" replace />} />
+    <Route
+      path="/home"
+      element={
+        <Home
+          searchResults={searchResults}
+          autoPlaySong={autoPlaySong}
+          setSearchResults={setSearchResults}
+        />
+      }
+    />
+    <Route path="/liked" element={<LikedSongs />} />
+    <Route path="/playlists" element={<Playlists />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/TopHits" element={<TopHits />} />
+    <Route path="/newrelease" element={<NewRelease />} />
+  </Routes>
+</div>
+
         </div>
       </div>
 
